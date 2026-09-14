@@ -1,0 +1,193 @@
+{
+  "authors": [
+    {
+      "id": 1,
+      "fullName": "Толстой Л. Н.",
+      "birthYear": 1828,
+      "country": "Россия",
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "fullName": "Оруэлл Дж.",
+      "birthYear": 1903,
+      "country": "Великобритания",
+      "deletedAt": null
+    }
+  ],
+  "genres": [
+    {
+      "id": 1,
+      "name": "Роман",
+      "description": "Крупная форма повествования",
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "name": "Антиутопия",
+      "description": "Жанр о нежелательном обществе",
+      "deletedAt": null
+    }
+  ],
+  "publishers": [
+    {
+      "id": 1,
+      "name": "АСТ",
+      "city": "Москва",
+      "foundedYear": 1990,
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "name": "Penguin",
+      "city": "London",
+      "foundedYear": 1935,
+      "deletedAt": null
+    }
+  ],
+  "readers": [
+    {
+      "id": 1,
+      "fullName": "Анна Читатель",
+      "email": "anna.reader@example.com",
+      "phone": "+7 900 111-11-11",
+      "card": {
+        "id": 1,
+        "number": "RC-000001",
+        "issuedAt": "2026-01-15T00:00:00Z",
+        "expiresAt": "2027-01-15T00:00:00Z"
+      },
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "fullName": "Смирнов П. А.",
+      "email": "smirnov@example.com",
+      "phone": "+7 900 000-00-00",
+      "card": {
+        "id": 2,
+        "number": "RC-000002",
+        "issuedAt": "2026-01-15T00:00:00Z",
+        "expiresAt": "2027-01-15T00:00:00Z"
+      },
+      "deletedAt": null
+    },
+    {
+      "id": 3,
+      "fullName": "Денчик",
+      "email": "aten@gmail.com@library.local",
+      "phone": "Не указан",
+      "card": {
+        "id": 3,
+        "number": "RC-000003",
+        "issuedAt": "2026-09-14T15:03:25.726Z",
+        "expiresAt": "2027-09-14T15:03:25.726Z"
+      },
+      "deletedAt": null
+    }
+  ],
+  "books": [
+    {
+      "id": 1,
+      "title": "Война и мир",
+      "isbn": "978-5-17-118366-4",
+      "year": 1869,
+      "pages": 1300,
+      "publisherId": 1,
+      "authorIds": [
+        1
+      ],
+      "genreIds": [
+        1
+      ],
+      "copiesTotal": 4,
+      "copiesAvailable": 0,
+      "createdAt": "2026-09-14T14:24:40.812Z",
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "title": "1984",
+      "isbn": "978-0-452-28423-4",
+      "year": 1949,
+      "pages": 328,
+      "publisherId": 2,
+      "authorIds": [
+        2
+      ],
+      "genreIds": [
+        2
+      ],
+      "copiesTotal": 1,
+      "copiesAvailable": 0,
+      "createdAt": "2026-09-14T14:24:40.813Z",
+      "deletedAt": null
+    }
+  ],
+  "loans": [
+    {
+      "id": 1,
+      "reader": {
+        "id": 1,
+        "fullName": "Анна Читатель"
+      },
+      "book": {
+        "id": 1,
+        "title": "Война и мир"
+      },
+      "issuedAt": "2026-09-14T14:27:11.662Z",
+      "dueAt": "2026-09-28T14:27:11.662Z",
+      "returnedAt": null,
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "reader": {
+        "id": 3,
+        "fullName": "Денчик"
+      },
+      "book": {
+        "id": 1,
+        "title": "Война и мир"
+      },
+      "issuedAt": "2026-09-14T15:05:08.698Z",
+      "dueAt": "2026-10-19T15:05:08.698Z",
+      "returnedAt": null,
+      "status": "active"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "reader",
+      "name": "Анна Читатель",
+      "password": "Reader1!",
+      "role": "reader",
+      "readerId": 1
+    },
+    {
+      "id": 2,
+      "username": "librarian",
+      "name": "Иван Библиотекарь",
+      "password": "Librarian1!",
+      "role": "librarian",
+      "readerId": null
+    },
+    {
+      "id": 3,
+      "username": "admin",
+      "name": "Ольга Администратор",
+      "password": "Admin1!",
+      "role": "admin",
+      "readerId": null
+    },
+    {
+      "id": 4,
+      "username": "aten@gmail.com",
+      "name": "Денчик",
+      "password": "Denisg1313\"",
+      "role": "reader",
+      "readerId": 3
+    }
+  ]
+}
