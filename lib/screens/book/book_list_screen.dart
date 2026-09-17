@@ -37,6 +37,19 @@ class _BookListScreenState extends State<BookListScreen> {
     super.dispose();
   }
 
+  List<Book> _applyQuery(List<Book> books) {
+    final query = _searchController.text.trim().toLowerCase();
+
+    if (query.isEmpty) {
+      return books;
+    }
+
+    return books.where((book) {
+      return book.title.toLowerCase().contains(query) ||
+          book.isbn.toLowerCase().contains(query);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookRepo = context.read<BookRepository>();
@@ -47,11 +60,12 @@ class _BookListScreenState extends State<BookListScreen> {
       appBar: AppBar(
         title: const Text('Каталог книг'),
         actions: [
-          if (context.watch<AuthNotifier>().has(Role.librarian)) IconButton(
-            tooltip: 'Добавить книгу',
-            onPressed: () => context.go('/books/new'),
-            icon: const Icon(Icons.add),
-          ),
+          if (context.watch<AuthNotifier>().has(Role.librarian))
+            IconButton(
+              tooltip: 'Добавить книгу',
+              onPressed: () => context.go('/books/new'),
+              icon: const Icon(Icons.add),
+            ),
           IconButton(
             tooltip: 'Обновить',
             onPressed: () => setState(() => _reload++),
@@ -80,14 +94,19 @@ class _BookListScreenState extends State<BookListScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Center(child: Padding(
+                  return Center(
+                      child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
                       const Icon(Icons.cloud_off, size: 48),
                       const SizedBox(height: 12),
-                      Text('Ошибка загрузки: ${snapshot.error}', textAlign: TextAlign.center),
+                      Text('Ошибка загрузки: ${snapshot.error}',
+                          textAlign: TextAlign.center),
                       const SizedBox(height: 12),
-                      FilledButton.icon(onPressed: () => setState(() => _reload++), icon: const Icon(Icons.refresh), label: const Text('Повторить')),
+                      FilledButton.icon(
+                          onPressed: () => setState(() => _reload++),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Повторить')),
                     ]),
                   ));
                 }
@@ -99,7 +118,7 @@ class _BookListScreenState extends State<BookListScreen> {
 
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    if (constraints.maxWidth >= 600) {
+                    if (constraints.maxWidth >= 1000) {
                       return EntityTable<Book>(
                         selectable: false,
                         items: rows,
@@ -111,7 +130,14 @@ class _BookListScreenState extends State<BookListScreen> {
                           TableColumnSpec<Book>(
                             label: 'Название',
                             sortField: 'title',
-                            build: (b) => Text(b.title),
+                            build: (b) => SizedBox(
+                              width: 220,
+                              child: Text(
+                                b.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
                           TableColumnSpec<Book>(
                             label: 'ISBN',
@@ -151,7 +177,11 @@ class _BookListScreenState extends State<BookListScreen> {
                             vertical: 6,
                           ),
                           child: ListTile(
-                            title: Text(b.title),
+                            title: Text(
+                              b.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             subtitle: Text(
                               '${b.year} • ${b.pages} стр. • ISBN ${b.isbn}\n'
                               'Доступно: ${b.copiesAvailable}/${b.copiesTotal}',
@@ -169,9 +199,18 @@ class _BookListScreenState extends State<BookListScreen> {
                                 }
                               },
                               itemBuilder: (_) => [
-                                const PopupMenuItem(value: 'view', child: Text('Просмотр')),
-                                if (context.read<AuthNotifier>().has(Role.librarian)) const PopupMenuItem(value: 'edit', child: Text('Изменить')),
-                                if (context.read<AuthNotifier>().has(Role.librarian)) const PopupMenuItem(value: 'delete', child: Text('Удалить')),
+                                const PopupMenuItem(
+                                    value: 'view', child: Text('Просмотр')),
+                                if (context
+                                    .read<AuthNotifier>()
+                                    .has(Role.librarian))
+                                  const PopupMenuItem(
+                                      value: 'edit', child: Text('Изменить')),
+                                if (context
+                                    .read<AuthNotifier>()
+                                    .has(Role.librarian))
+                                  const PopupMenuItem(
+                                      value: 'delete', child: Text('Удалить')),
                               ],
                             ),
                           ),
@@ -226,137 +265,85 @@ class _BookListScreenState extends State<BookListScreen> {
   Widget _buildFilters(List<Genre> genres, List<Publisher> publishers) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            SizedBox(
-              width: 180,
-              child: DropdownButtonFormField<int?>(
-                initialValue: _genreId,
-                decoration: const InputDecoration(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          SizedBox(
+            width: 180,
+            child: DropdownButtonFormField<int?>(
+              initialValue: _genreId,
+              decoration: const InputDecoration(
                   labelText: 'Жанр',
                   border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('Все жанры'),
-                  ),
-                  ...genres.map(
-                    (g) => DropdownMenuItem<int?>(
-                      value: g.id,
-                      child: Text(g.name),
-                    ),
-                  ),
-                ],
-                onChanged: (value) => setState(() => _genreId = value),
-              ),
+                  isDense: true),
+              items: [
+                const DropdownMenuItem<int?>(
+                    value: null, child: Text('Все жанры')),
+                ...genres.map((g) => DropdownMenuItem<int?>(
+                    value: g.id,
+                    child: Text(g.name, overflow: TextOverflow.ellipsis))),
+              ],
+              onChanged: (value) => setState(() => _genreId = value),
             ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 200,
-              child: DropdownButtonFormField<int?>(
-                initialValue: _publisherId,
-                decoration: const InputDecoration(
+          ),
+          SizedBox(
+            width: 200,
+            child: DropdownButtonFormField<int?>(
+              initialValue: _publisherId,
+              decoration: const InputDecoration(
                   labelText: 'Издательство',
                   border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('Все издательства'),
-                  ),
-                  ...publishers.map(
-                    (p) => DropdownMenuItem<int?>(
-                      value: p.id,
-                      child: Text(p.name),
-                    ),
-                  ),
-                ],
-                onChanged: (value) => setState(() => _publisherId = value),
-              ),
+                  isDense: true),
+              items: [
+                const DropdownMenuItem<int?>(
+                    value: null, child: Text('Все издательства')),
+                ...publishers.map((p) => DropdownMenuItem<int?>(
+                    value: p.id,
+                    child: Text(p.name, overflow: TextOverflow.ellipsis))),
+              ],
+              onChanged: (value) => setState(() => _publisherId = value),
             ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 110,
-              child: TextField(
+          ),
+          SizedBox(
+            width: 100,
+            child: TextField(
                 controller: _yearFromController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Год от',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 110,
-              child: TextField(
+                    labelText: 'Год от',
+                    border: OutlineInputBorder(),
+                    isDense: true),
+                onChanged: (_) => setState(() {})),
+          ),
+          SizedBox(
+            width: 100,
+            child: TextField(
                 controller: _yearToController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Год до',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton.icon(
-              onPressed: _clearFilters,
-              icon: const Icon(Icons.filter_alt_off),
-              label: const Text('Сбросить'),
-            ),
-          ],
-        ),
+                    labelText: 'Год до',
+                    border: OutlineInputBorder(),
+                    isDense: true),
+                onChanged: (_) => setState(() {})),
+          ),
+          OutlinedButton.icon(
+            onPressed: () {
+              _searchController.clear();
+              _yearFromController.clear();
+              _yearToController.clear();
+              setState(() {
+                _genreId = null;
+                _publisherId = null;
+              });
+            },
+            icon: const Icon(Icons.filter_alt_off),
+            label: const Text('Сбросить'),
+          ),
+        ],
       ),
     );
-  }
-
-  List<Book> _applyQuery(List<Book> source) {
-    var rows = [...source];
-    final search = _searchController.text.trim().toLowerCase();
-    final yearFrom = int.tryParse(_yearFromController.text.trim());
-    final yearTo = int.tryParse(_yearToController.text.trim());
-
-    if (search.isNotEmpty) {
-      rows = rows
-          .where(
-            (b) =>
-                b.title.toLowerCase().contains(search) ||
-                b.isbn.toLowerCase().contains(search),
-          )
-          .toList();
-    }
-    if (_genreId != null) {
-      rows = rows.where((b) => b.genreIds.contains(_genreId)).toList();
-    }
-    if (_publisherId != null) {
-      rows = rows.where((b) => b.publisherId == _publisherId).toList();
-    }
-    if (yearFrom != null) {
-      rows = rows.where((b) => b.year >= yearFrom).toList();
-    }
-    if (yearTo != null) {
-      rows = rows.where((b) => b.year <= yearTo).toList();
-    }
-
-    rows.sort((a, b) {
-      final result = switch (_sortField) {
-        'year' => a.year.compareTo(b.year),
-        'pages' => a.pages.compareTo(b.pages),
-        _ => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-      };
-      return _sortAscending ? result : -result;
-    });
-
-    return rows;
   }
 
   void _changeSort(String field) {
@@ -367,18 +354,6 @@ class _BookListScreenState extends State<BookListScreen> {
         _sortField = field;
         _sortAscending = true;
       }
-    });
-  }
-
-  void _clearFilters() {
-    setState(() {
-      _searchController.clear();
-      _yearFromController.clear();
-      _yearToController.clear();
-      _genreId = null;
-      _publisherId = null;
-      _sortField = 'title';
-      _sortAscending = true;
     });
   }
 
@@ -393,16 +368,18 @@ class _BookListScreenState extends State<BookListScreen> {
         icon: const Icon(Icons.visibility),
         onPressed: () => context.go('/books/${book.id}'),
       ),
-      if (context.read<AuthNotifier>().has(Role.librarian)) IconButton(
-        tooltip: 'Изменить',
-        icon: const Icon(Icons.edit),
-        onPressed: () => context.go('/books/${book.id}/edit'),
-      ),
-      if (context.read<AuthNotifier>().has(Role.librarian)) IconButton(
-        tooltip: 'Удалить',
-        icon: const Icon(Icons.delete_outline),
-        onPressed: () => _deleteBook(context, repo, book),
-      ),
+      if (context.read<AuthNotifier>().has(Role.librarian))
+        IconButton(
+          tooltip: 'Изменить',
+          icon: const Icon(Icons.edit),
+          onPressed: () => context.go('/books/${book.id}/edit'),
+        ),
+      if (context.read<AuthNotifier>().has(Role.librarian))
+        IconButton(
+          tooltip: 'Удалить',
+          icon: const Icon(Icons.delete_outline),
+          onPressed: () => _deleteBook(context, repo, book),
+        ),
     ];
   }
 

@@ -11,7 +11,8 @@ String _date(dynamic value) {
 }
 
 void _showError(BuildContext context, Object error) {
-  final text = error is DioException ? mapDioError(error).toString() : error.toString();
+  final text =
+      error is DioException ? mapDioError(error).toString() : error.toString();
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
 
@@ -28,7 +29,11 @@ class _ReaderLoansScreenState extends State<ReaderLoansScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Мои выдачи'),
-        actions: [IconButton(onPressed: () => setState(() => reload++), icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(
+              onPressed: () => setState(() => reload++),
+              icon: const Icon(Icons.refresh))
+        ],
       ),
       body: FutureBuilder<Response<dynamic>>(
         key: ValueKey(reload),
@@ -40,7 +45,8 @@ class _ReaderLoansScreenState extends State<ReaderLoansScreen> {
           if (snapshot.hasError) {
             return Center(child: Text('Ошибка: ${snapshot.error}'));
           }
-          final items = ((snapshot.data?.data['items'] as List?) ?? const []).cast<dynamic>();
+          final items = ((snapshot.data?.data['items'] as List?) ?? const [])
+              .cast<dynamic>();
           if (items.isEmpty) {
             return const Center(child: Text('У вас пока нет выдач'));
           }
@@ -54,7 +60,8 @@ class _ReaderLoansScreenState extends State<ReaderLoansScreen> {
               return Card(
                 child: ListTile(
                   leading: Icon(active ? Icons.menu_book : Icons.task_alt),
-                  title: Text(((x['book'] as Map?)?['title'])?.toString() ?? 'Книга'),
+                  title: Text(
+                      ((x['book'] as Map?)?['title'])?.toString() ?? 'Книга'),
                   subtitle: Text(
                     'Выдано: ${_date(x['issuedAt'])}\n'
                     'Вернуть до: ${_date(x['dueAt'])}\n'
@@ -80,11 +87,16 @@ class _ReaderLoansScreenState extends State<ReaderLoansScreen> {
   Future<void> _renew(BuildContext context, int id) async {
     try {
       await context.read<Dio>().post('/loans/$id/renew');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Срок выдачи продлён на 14 дней')));
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Срок выдачи продлён на 14 дней')));
       setState(() => reload++);
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 }
@@ -110,16 +122,24 @@ class _LibrarianLoansScreenState extends State<LibrarianLoansScreen> {
             label: const Text('Оформить выдачу'),
           ),
           const SizedBox(width: 8),
-          IconButton(onPressed: () => setState(() => reload++), icon: const Icon(Icons.refresh)),
+          IconButton(
+              onPressed: () => setState(() => reload++),
+              icon: const Icon(Icons.refresh)),
         ],
       ),
       body: FutureBuilder<Response<dynamic>>(
         key: ValueKey(reload),
         future: context.read<Dio>().get('/loans'),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError) return Center(child: Text('Ошибка: ${snapshot.error}'));
-          final items = ((snapshot.data?.data['items'] as List?) ?? const []).cast<dynamic>();
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Ошибка: ${snapshot.error}'));
+          }
+          final items = ((snapshot.data?.data['items'] as List?) ?? const [])
+              .cast<dynamic>();
           if (items.isEmpty) {
             return Center(
               child: Column(
@@ -129,7 +149,10 @@ class _LibrarianLoansScreenState extends State<LibrarianLoansScreen> {
                   const SizedBox(height: 12),
                   const Text('Выдач пока нет'),
                   const SizedBox(height: 12),
-                  FilledButton.icon(onPressed: () => _issueDialog(context), icon: const Icon(Icons.add), label: const Text('Оформить первую выдачу')),
+                  FilledButton.icon(
+                      onPressed: () => _issueDialog(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Оформить первую выдачу')),
                 ],
               ),
             );
@@ -143,8 +166,10 @@ class _LibrarianLoansScreenState extends State<LibrarianLoansScreen> {
               final active = x['returnedAt'] == null;
               return Card(
                 child: ListTile(
-                  leading: Icon(active ? Icons.assignment : Icons.assignment_turned_in),
-                  title: Text(((x['book'] as Map?)?['title'])?.toString() ?? 'Книга'),
+                  leading: Icon(
+                      active ? Icons.assignment : Icons.assignment_turned_in),
+                  title: Text(
+                      ((x['book'] as Map?)?['title'])?.toString() ?? 'Книга'),
                   subtitle: Text(
                     'Читатель: ${(x['reader'] as Map?)?['fullName'] ?? '—'}\n'
                     'Выдано: ${_date(x['issuedAt'])} • до ${_date(x['dueAt'])}\n'
@@ -174,11 +199,17 @@ class _LibrarianLoansScreenState extends State<LibrarianLoansScreen> {
         dio.get('/readers', queryParameters: {'size': 100}),
         dio.get('/books', queryParameters: {'size': 100}),
       ]);
-      if (!mounted) return;
-      final readers = ((results[0].data['items'] as List?) ?? const []).cast<dynamic>();
-      final books = ((results[1].data['items'] as List?) ?? const []).cast<dynamic>();
+      if (!context.mounted) {
+        return;
+      }
+      final readers =
+          ((results[0].data['items'] as List?) ?? const []).cast<dynamic>();
+      final books =
+          ((results[1].data['items'] as List?) ?? const []).cast<dynamic>();
       if (readers.isEmpty || books.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Для выдачи нужны хотя бы один читатель и одна книга')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content:
+                Text('Для выдачи нужны хотя бы один читатель и одна книга')));
         return;
       }
       int readerId = readers.first['id'] as int;
@@ -196,55 +227,108 @@ class _LibrarianLoansScreenState extends State<LibrarianLoansScreen> {
                 children: [
                   DropdownButtonFormField<int>(
                     initialValue: readerId,
-                    decoration: const InputDecoration(labelText: 'Читатель', border: OutlineInputBorder()),
-                    items: readers.map<DropdownMenuItem<int>>((r) => DropdownMenuItem(value: r['id'] as int, child: Text(r['fullName'].toString()))).toList(),
-                    onChanged: (v) { if (v != null) setDialogState(() => readerId = v); },
+                    decoration: const InputDecoration(
+                        labelText: 'Читатель', border: OutlineInputBorder()),
+                    items: readers
+                        .map<DropdownMenuItem<int>>((r) => DropdownMenuItem(
+                            value: r['id'] as int,
+                            child: Text(r['fullName'].toString())))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) {
+                        setDialogState(() => readerId = v);
+                      }
+                    },
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
                     initialValue: bookId,
-                    decoration: const InputDecoration(labelText: 'Книга', border: OutlineInputBorder()),
-                    items: books.map<DropdownMenuItem<int>>((b) => DropdownMenuItem(
-                      value: b['id'] as int,
-                      child: Text('${b['title']} (доступно ${b['copiesAvailable']}/${b['copiesTotal']})'),
-                    )).toList(),
-                    onChanged: (v) { if (v != null) setDialogState(() => bookId = v); },
+                    decoration: const InputDecoration(
+                        labelText: 'Книга', border: OutlineInputBorder()),
+                    items: books
+                        .map<DropdownMenuItem<int>>((b) => DropdownMenuItem(
+                              value: b['id'] as int,
+                              child: Text(
+                                  '${b['title']} (доступно ${b['copiesAvailable']}/${b['copiesTotal']})'),
+                            ))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) {
+                        setDialogState(() => bookId = v);
+                      }
+                    },
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
                     initialValue: days,
-                    decoration: const InputDecoration(labelText: 'Срок', border: OutlineInputBorder()),
-                    items: const [7, 14, 21, 30].map((d) => DropdownMenuItem(value: d, child: Text('$d дней'))).toList(),
-                    onChanged: (v) { if (v != null) setDialogState(() => days = v); },
+                    decoration: const InputDecoration(
+                        labelText: 'Срок', border: OutlineInputBorder()),
+                    items: const [7, 14, 21, 30]
+                        .map((d) =>
+                            DropdownMenuItem(value: d, child: Text('$d дней')))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) {
+                        setDialogState(() => days = v);
+                      }
+                    },
                   ),
                 ],
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Отмена')),
-              FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Оформить')),
+              TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Отмена')),
+              FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Оформить')),
             ],
           ),
         ),
       );
-      if (ok != true || !mounted) return;
-      await context.read<Dio>().post('/loans', data: {'readerId': readerId, 'bookId': bookId, 'days': days});
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Выдача успешно оформлена')));
+      if (ok != true || !context.mounted) {
+        return;
+      }
+      await dio.post('/loans', data: {
+        'readerId': readerId,
+        'bookId': bookId,
+        'days': days,
+      });
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Выдача успешно оформлена')));
       setState(() => reload++);
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 
   Future<void> _returnLoan(BuildContext context, int id) async {
+    final dio = context.read<Dio>();
+
     try {
-      await context.read<Dio>().post('/loans/$id/return');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Выдача закрыта, экземпляр возвращён')));
+      await dio.post('/loans/$id/return');
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Выдача закрыта, экземпляр возвращён'),
+        ),
+      );
+
       setState(() => reload++);
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 }
@@ -269,18 +353,30 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     final calls = <Future<Response<dynamic>>>[
       dio.get('/admin/users'),
       dio.get('/admin/stats'),
-      ...resources.keys.map((r) => dio.get('/$r', queryParameters: {'includeDeleted': true, 'size': 100})),
+      ...resources.keys.map((r) => dio
+          .get('/$r', queryParameters: {'includeDeleted': true, 'size': 100})),
     ];
     final data = await Future.wait(calls);
     final deleted = <Map<String, dynamic>>[];
     var i = 2;
     for (final entry in resources.entries) {
-      final items = ((data[i++].data['items'] as List?) ?? const []).cast<dynamic>();
+      final items =
+          ((data[i++].data['items'] as List?) ?? const []).cast<dynamic>();
       for (final x in items) {
-        if (x['deletedAt'] != null) deleted.add({'resource': entry.key, 'resourceLabel': entry.value, 'item': x});
+        if (x['deletedAt'] != null) {
+          deleted.add({
+            'resource': entry.key,
+            'resourceLabel': entry.value,
+            'item': x,
+          });
+        }
       }
     }
-    return {'users': data[0].data as List, 'stats': Map<String, dynamic>.from(data[1].data), 'deleted': deleted};
+    return {
+      'users': data[0].data as List,
+      'stats': Map<String, dynamic>.from(data[1].data),
+      'deleted': deleted
+    };
   }
 
   @override
@@ -288,18 +384,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Администрирование'),
-        actions: [IconButton(onPressed: () => setState(() => reload++), icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(
+              onPressed: () => setState(() => reload++),
+              icon: const Icon(Icons.refresh))
+        ],
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         key: ValueKey(reload),
         future: _load(context.read<Dio>()),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError) return Center(child: Text('Ошибка: ${snapshot.error}'));
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Ошибка: ${snapshot.error}'));
+          }
           final data = snapshot.data!;
           final users = (data['users'] as List).cast<dynamic>();
           final stats = data['stats'] as Map<String, dynamic>;
-          final deleted = (data['deleted'] as List).cast<Map<String, dynamic>>();
+          final deleted =
+              (data['deleted'] as List).cast<Map<String, dynamic>>();
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -309,55 +414,90 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  _Stat(label: 'Пользователей', value: '${stats['users'] ?? 0}', icon: Icons.people),
-                  _Stat(label: 'Читателей', value: '${stats['readers'] ?? 0}', icon: Icons.badge),
-                  _Stat(label: 'Книг', value: '${stats['books'] ?? 0}', icon: Icons.menu_book),
-                  _Stat(label: 'Активных выдач', value: '${stats['activeLoans'] ?? 0}', icon: Icons.assignment),
-                  _Stat(label: 'Удалённых записей', value: '${stats['deleted'] ?? 0}', icon: Icons.delete_outline),
+                  _Stat(
+                      label: 'Пользователей',
+                      value: '${stats['users'] ?? 0}',
+                      icon: Icons.people),
+                  _Stat(
+                      label: 'Читателей',
+                      value: '${stats['readers'] ?? 0}',
+                      icon: Icons.badge),
+                  _Stat(
+                      label: 'Книг',
+                      value: '${stats['books'] ?? 0}',
+                      icon: Icons.menu_book),
+                  _Stat(
+                      label: 'Активных выдач',
+                      value: '${stats['activeLoans'] ?? 0}',
+                      icon: Icons.assignment),
+                  _Stat(
+                      label: 'Удалённых записей',
+                      value: '${stats['deleted'] ?? 0}',
+                      icon: Icons.delete_outline),
                 ],
               ),
               const SizedBox(height: 24),
-              Text('Пользователи и роли', style: Theme.of(context).textTheme.titleLarge),
+              Text('Пользователи и роли',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               Card(
                 child: Column(
-                  children: users.map((x) => ListTile(
-                    leading: const Icon(Icons.person),
-                    title: Text(x['name'].toString()),
-                    subtitle: Text('${x['username']} • ${x['role']}'),
-                    trailing: DropdownButton<String>(
-                      value: x['role'].toString(),
-                      items: const ['reader', 'librarian', 'admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                      onChanged: (v) => _changeRole(context, x['id'] as int, v),
-                    ),
-                  )).toList(),
+                  children: users
+                      .map((x) => ListTile(
+                            leading: const Icon(Icons.person),
+                            title: Text(x['name'].toString()),
+                            subtitle: Text('${x['username']} • ${x['role']}'),
+                            trailing: DropdownButton<String>(
+                              value: x['role'].toString(),
+                              items: const ['reader', 'librarian', 'admin']
+                                  .map((r) => DropdownMenuItem(
+                                      value: r, child: Text(r)))
+                                  .toList(),
+                              onChanged: (v) =>
+                                  _changeRole(context, x['id'] as int, v),
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Удалённые записи', style: Theme.of(context).textTheme.titleLarge),
+              Text('Удалённые записи',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               if (deleted.isEmpty)
-                const Card(child: ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Удалённых записей нет')))
+                const Card(
+                    child: ListTile(
+                        leading: Icon(Icons.check_circle_outline),
+                        title: Text('Удалённых записей нет')))
               else
                 ...deleted.map((row) {
                   final item = row['item'] as dynamic;
-                  final label = item['title'] ?? item['fullName'] ?? item['name'] ?? 'Запись #${item['id']}';
+                  final label = item['title'] ??
+                      item['fullName'] ??
+                      item['name'] ??
+                      'Запись #${item['id']}';
                   return Card(
                     child: ListTile(
                       leading: const Icon(Icons.delete_outline),
                       title: Text(label.toString()),
-                      subtitle: Text('${row['resourceLabel']} • удалено ${_date(item['deletedAt'])}'),
+                      subtitle: Text(
+                          '${row['resourceLabel']} • удалено ${_date(item['deletedAt'])}'),
                       trailing: Wrap(
                         spacing: 8,
                         children: [
                           FilledButton.tonalIcon(
-                            onPressed: () => _restore(context, row['resource'] as String, item['id'] as int),
+                            onPressed: () => _restore(context,
+                                row['resource'] as String, item['id'] as int),
                             icon: const Icon(Icons.restore),
                             label: const Text('Восстановить'),
                           ),
                           IconButton(
                             tooltip: 'Удалить физически',
-                            onPressed: () => _hardDelete(context, row['resource'] as String, item['id'] as int, label.toString()),
+                            onPressed: () => _hardDelete(
+                                context,
+                                row['resource'] as String,
+                                item['id'] as int,
+                                label.toString()),
                             icon: const Icon(Icons.delete_forever),
                           ),
                         ],
@@ -373,46 +513,75 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 
   Future<void> _changeRole(BuildContext context, int id, String? role) async {
-    if (role == null) return;
+    if (role == null) {
+      return;
+    }
     try {
-      await context.read<Dio>().put('/admin/users/$id/role', data: {'role': role});
-      if (mounted) setState(() => reload++);
+      await context
+          .read<Dio>()
+          .put('/admin/users/$id/role', data: {'role': role});
+      if (context.mounted) {
+        setState(() => reload++);
+      }
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 
   Future<void> _restore(BuildContext context, String resource, int id) async {
     try {
       await context.read<Dio>().post('/$resource/$id/restore');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Запись восстановлена')));
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Запись восстановлена')));
       setState(() => reload++);
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 
-  Future<void> _hardDelete(BuildContext context, String resource, int id, String label) async {
+  Future<void> _hardDelete(
+      BuildContext context, String resource, int id, String label) async {
+    final dio = context.read<Dio>();
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Удалить физически?'),
         content: Text('$label будет удалён без возможности восстановления.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Удалить навсегда')),
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Отмена')),
+          FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Удалить навсегда')),
         ],
       ),
     );
-    if (ok != true || !mounted) return;
+    if (ok != true || !context.mounted) {
+      return;
+    }
     try {
-      await context.read<Dio>().delete('/$resource/$id', queryParameters: {'hard': true});
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Запись физически удалена')));
+      await dio.delete(
+        '/$resource/$id',
+        queryParameters: {'hard': true},
+      );
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Запись физически удалена')));
       setState(() => reload++);
     } catch (e) {
-      if (mounted) _showError(context, e);
+      if (context.mounted) {
+        _showError(context, e);
+      }
     }
   }
 }
@@ -429,7 +598,12 @@ class _Stat extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: [Icon(icon, size: 30), const SizedBox(height: 8), Text(value, style: Theme.of(context).textTheme.headlineSmall), Text(label, textAlign: TextAlign.center)],
+              children: [
+                Icon(icon, size: 30),
+                const SizedBox(height: 8),
+                Text(value, style: Theme.of(context).textTheme.headlineSmall),
+                Text(label, textAlign: TextAlign.center)
+              ],
             ),
           ),
         ),

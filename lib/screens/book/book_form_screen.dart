@@ -141,7 +141,11 @@ class _BookFormScreenState extends State<BookFormScreen> {
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Редактирование книги' : 'Новая книга'),
       ),
-      body: Form(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -287,7 +291,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
             ),
           ],
         ),
-      ),
+      ))),
     );
   }
 

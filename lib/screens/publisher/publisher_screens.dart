@@ -215,7 +215,11 @@ class _PublisherFormScreenState extends State<PublisherFormScreen> {
           widget.id == null ? 'Новое издательство' : 'Редактирование издательства',
         ),
       ),
-      body: Form(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -261,7 +265,7 @@ class _PublisherFormScreenState extends State<PublisherFormScreen> {
             FilledButton(onPressed: _save, child: const Text('Сохранить')),
           ],
         ),
-      ),
+      ))),
     );
   }
 

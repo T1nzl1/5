@@ -205,7 +205,11 @@ class _ReaderFormScreenState extends State<ReaderFormScreen> {
       appBar: AppBar(
         title: Text(widget.id == null ? 'Новый читатель' : 'Редактирование читателя'),
       ),
-      body: Form(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -299,7 +303,7 @@ class _ReaderFormScreenState extends State<ReaderFormScreen> {
             FilledButton(onPressed: _save, child: const Text('Сохранить')),
           ],
         ),
-      ),
+      ))),
     );
   }
 

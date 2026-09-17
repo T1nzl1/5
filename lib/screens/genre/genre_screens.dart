@@ -161,7 +161,11 @@ class _GenreFormScreenState extends State<GenreFormScreen> {
       appBar: AppBar(
         title: Text(widget.id == null ? 'Новый жанр' : 'Редактирование жанра'),
       ),
-      body: Form(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -196,7 +200,7 @@ class _GenreFormScreenState extends State<GenreFormScreen> {
             FilledButton(onPressed: _save, child: const Text('Сохранить')),
           ],
         ),
-      ),
+      ))),
     );
   }
 

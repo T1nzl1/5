@@ -59,7 +59,11 @@ class _AuthorFormScreenState extends State<AuthorFormScreen> {
       appBar: AppBar(
         title: Text(widget.id == null ? 'Новый автор' : 'Редактирование автора'),
       ),
-      body: Form(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -105,7 +109,7 @@ class _AuthorFormScreenState extends State<AuthorFormScreen> {
             ),
           ],
         ),
-      ),
+      ))),
     );
   }
 

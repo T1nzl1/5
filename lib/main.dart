@@ -54,48 +54,91 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
     final path = GoRouterState.of(context).uri.path;
-    final destinations = <NavigationDestination>[
-      const NavigationDestination(icon: Icon(Icons.book), label: 'Книги'),
+    final items = <({IconData icon, String label, String route})>[
+      (icon: Icons.book, label: 'Книги', route: '/'),
     ];
-    final routes = <String>['/'];
 
     if (auth.isReader) {
-      destinations.add(const NavigationDestination(icon: Icon(Icons.assignment), label: 'Мои выдачи'));
-      routes.add('/my-loans');
+      items.add((icon: Icons.assignment, label: 'Мои выдачи', route: '/my-loans'));
     }
     if (auth.isLibrarian) {
-      destinations.addAll(const [
-        NavigationDestination(icon: Icon(Icons.people), label: 'Авторы'),
-        NavigationDestination(icon: Icon(Icons.category), label: 'Жанры'),
-        NavigationDestination(icon: Icon(Icons.apartment), label: 'Издательства'),
-        NavigationDestination(icon: Icon(Icons.badge), label: 'Читатели'),
-        NavigationDestination(icon: Icon(Icons.assignment), label: 'Выдачи'),
+      items.addAll([
+        (icon: Icons.people, label: 'Авторы', route: '/authors'),
+        (icon: Icons.category, label: 'Жанры', route: '/genres'),
+        (icon: Icons.apartment, label: 'Издательства', route: '/publishers'),
+        (icon: Icons.badge, label: 'Читатели', route: '/readers'),
+        (icon: Icons.assignment, label: 'Выдачи', route: '/loans/manage'),
       ]);
-      routes.addAll(['/authors', '/genres', '/publishers', '/readers', '/loans/manage']);
     }
     if (auth.isAdmin) {
-      destinations.add(const NavigationDestination(icon: Icon(Icons.admin_panel_settings), label: 'Админ'));
-      routes.add('/admin/users');
+      items.add((icon: Icons.admin_panel_settings, label: 'Админ', route: '/admin/users'));
     }
 
     var index = 0;
-    for (var i = 1; i < routes.length; i++) {
-      if (path.startsWith(routes[i])) index = i;
+    for (var i = 1; i < items.length; i++) {
+      if (path.startsWith(items[i].route)) index = i;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('LibraryDen • ${auth.user?.name ?? ''} (${auth.user?.role.label ?? ''})'),
-        actions: [
-          IconButton(tooltip: 'Выйти', onPressed: () async => auth.logout(), icon: const Icon(Icons.logout)),
-        ],
-      ),
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => context.go(routes[i]),
-        destinations: destinations,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useRail = constraints.maxWidth >= 768;
+        final extendedRail = constraints.maxWidth >= 1280;
+        final content = Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1440),
+            child: child,
+          ),
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'LibraryDen • ${auth.user?.name ?? ''} (${auth.user?.role.label ?? ''})',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            actions: [
+              IconButton(
+                tooltip: 'Выйти',
+                onPressed: () async => auth.logout(),
+                icon: const Icon(Icons.logout),
+              ),
+            ],
+          ),
+          body: useRail
+              ? Row(
+                  children: [
+                    NavigationRail(
+                      selectedIndex: index,
+                      extended: extendedRail,
+                      labelType: extendedRail ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                      onDestinationSelected: (i) => context.go(items[i].route),
+                      destinations: [
+                        for (final item in items)
+                          NavigationRailDestination(
+                            icon: Icon(item.icon),
+                            label: Text(item.label),
+                          ),
+                      ],
+                    ),
+                    const VerticalDivider(width: 1),
+                    Expanded(child: content),
+                  ],
+                )
+              : content,
+          bottomNavigationBar: useRail
+              ? null
+              : NavigationBar(
+                  selectedIndex: index,
+                  onDestinationSelected: (i) => context.go(items[i].route),
+                  destinations: [
+                    for (final item in items)
+                      NavigationDestination(icon: Icon(item.icon), label: item.label),
+                  ],
+                ),
+        );
+      },
     );
   }
 }

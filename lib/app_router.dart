@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'main.dart' show MainScreen;
 import 'state_auth.dart';
+import 'utils/access_policy.dart';
 import 'screens/auth/auth_screens.dart';
 import 'screens/role/role_screens.dart';
 import 'screens/book/book_list_screen.dart';
@@ -26,7 +27,12 @@ class AppRouter {
           }
           if (auth.isAuthenticated && isPublic) return '/';
 
-          // Защита закрытых маршрутов при ручном вводе URL
+          // Единая проверка прав; эта логика отдельно покрыта unit-тестами.
+          if (auth.user != null && !AccessPolicy.canOpen(auth.user!.role, p)) {
+            return '/forbidden';
+          }
+
+          // Дополнительная защита закрытых маршрутов при ручном вводе URL
           if (p.startsWith('/admin') && !auth.isAdmin) {
             return '/forbidden';
           }
